@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartStudy AI - Chat Agent</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
+        body { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: #f8fafc; min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; }
+        
+        .chat-container { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); width: 100%; max-width: 800px; height: 85vh; border-radius: 24px; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4); border: 1px solid rgba(255, 255, 255, 0.1); display: flex; flex-direction: column; overflow: hidden; position: relative; }
+        .chat-container::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 5px; background: linear-gradient(90deg, #38bdf8, #34d399); }
+        
+        /* Header Chat */
+        .chat-header { padding: 20px 25px; background: rgba(15, 23, 42, 0.6); border-bottom: 1px solid rgba(255, 255, 255, 0.05); display: flex; justify-content: space-between; align-items: center; }
+        .ai-profile { display: flex; align-items: center; gap: 15px; }
+        .ai-avatar { width: 45px; height: 45px; background: linear-gradient(135deg, #0284c7, #10b981); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 20px; box-shadow: 0 0 15px rgba(56, 189, 248, 0.4); }
+        .ai-info h2 { font-size: 18px; font-weight: 600; color: #ffffff; }
+        .ai-status { font-size: 12px; color: #34d399; display: flex; align-items: center; gap: 5px; }
+        .ai-status::before { content: ''; display: inline-block; width: 8px; height: 8px; background: #34d399; border-radius: 50%; }
+        .btn-back { color: #94a3b8; text-decoration: none; font-size: 14px; padding: 8px 16px; border-radius: 8px; background: rgba(255, 255, 255, 0.05); transition: all 0.2s; border: 1px solid rgba(255, 255, 255, 0.05); }
+        .btn-back:hover { color: #ffffff; background: rgba(239, 68, 68, 0.2); border-color: rgba(239, 68, 68, 0.3); }
+
+        /* Area Pesan Obrolan */
+        .chat-box { flex: 1; padding: 25px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; scroll-behavior: smooth; }
+        .chat-box::-webkit-scrollbar { width: 6px; }
+        .chat-box::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
+        
+        /* Balon Pesan */
+        .message { display: flex; gap: 12px; max-width: 75%; }
+        .message.user { align-self: flex-end; flex-direction: row-reverse; }
+        .message.ai { align-self: flex-start; }
+        .msg-bubble { padding: 14px 18px; border-radius: 18px; font-size: 15px; line-height: 1.5; color: #f8fafc; }
+        .message.user .msg-bubble { background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); border-bottom-right-radius: 4px; box-shadow: 0 4px 12px rgba(2, 132, 199, 0.2); }
+        .message.ai .msg-bubble { background: #334155; border-bottom-left-radius: 4px; border: 1px solid rgba(255, 255, 255, 0.05); }
+        .msg-time { font-size: 10px; color: #64748b; margin-top: 5px; display: block; text-align: right; }
+        .message.user .msg-time { color: #93c5fd; }
+
+        /* Input Form Bar */
+        .chat-input-area { padding: 20px 25px; background: rgba(15, 23, 42, 0.4); border-top: 1px solid rgba(255, 255, 255, 0.05); }
+        .chat-form { display: flex; gap: 12px; }
+        .chat-input { flex: 1; padding: 14px 20px; background: #0f172a; border: 1px solid #334155; border-radius: 14px; color: #ffffff; font-size: 15px; transition: all 0.3s; }
+        .chat-input:focus { border-color: #38bdf8; outline: none; box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15); }
+        .btn-send { padding: 0 24px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none; border-radius: 14px; font-weight: 600; font-size: 15px; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2); }
+        .btn-send:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(16, 185, 129, 0.3); }
+        
+        /* Efek Mengetik AI */
+        .typing-indicator { display: flex; gap: 5px; padding: 8px 12px; background: #334155; border-radius: 12px; width: fit-content; }
+        .typing-dot { width: 8px; height: 8px; background: #94a3b8; border-radius: 50%; animation: pulse 1.4s infinite ease-in-out; }
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes pulse { 0%, 100% { transform: scale(0.8); opacity: 0.5; } 50% { transform: scale(1.2); opacity: 1; } }
+    </style>
+</head>
+<body>
+
+    <div class="chat-container">
+        <div class="chat-header">
+            <div class="ai-profile">
+                <div class="ai-avatar">🤖</div>
+                <div class="ai-info">
+                    <h2>SmartStudy AI Agent</h2>
+                    <div class="ai-status">Online</div>
+                </div>
+            </div>
+            <a href="dashboard.html" class="btn-back">← Dashboard</a>
+        </div>
+
+        <div class="chat-box" id="chat-box">
+            <div class="message ai">
+                <div class="msg-bubble">
+                    Halo! Saya SmartStudy AI Agent. Ada materi pelajaran atau konsep Kecerdasan Buatan yang ingin kamu diskusikan hari ini? Selalu siap membantu belajarmu!
+                    <span class="msg-time">Sekarang</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-input-area">
+            <form class="chat-form" id="chat-form">
+                <input type="text" id="user-input" class="chat-input" placeholder="Tanyakan sesuatu tentang pelajaran Anda..." autocomplete="off" required>
+                <button type="submit" class="btn-send">Kirim</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const chatForm = document.getElementById('chat-form');
+        const userInput = document.getElementById('user-input');
+        const chatBox = document.getElementById('chat-box');
+
+        chatForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const messageText = userInput.value.trim();
+            if (!messageText) return;
+
+            // 1. Tampilkan pesan user ke layar
+            appendMessage(messageText, 'user');
+            userInput.value = '';
+
+            // 2. Tampilkan indikator AI sedang mengetik
+            const typingElem = showTypingIndicator();
+            chatBox.appendChild(typingElem);
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            // 3. Simulasi jawaban pintar AI (Delay 1.5 detik seolah berpikir)
+            setTimeout(() => {
+                typingElem.remove(); // hapus indikator mengetik
+                const aiResponse = generateAIResponse(messageText);
+                appendMessage(aiResponse, 'ai');
+                chatBox.scrollTop = chatBox.scrollHeight;
+            }, 1500);
+        });
+
+        // Fungsi membuat balon chat baru
+        function appendMessage(text, sender) {
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message', sender);
+
+            const now = new Date();
+            const timeStr = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+
+            messageDiv.innerHTML = `
+                <div class="msg-bubble">
+                    ${text}
+                    <span class="msg-time">${timeStr}</span>
+                </div>
+            `;
+            chatBox.appendChild(messageDiv);
+        }
+
+        // Fungsi membuat animasi titik tiga mengetik
+        function showTypingIndicator() {
+            const indicatorDiv = document.createElement('div');
+            indicatorDiv.classList.add('message', 'ai');
+            indicatorDiv.innerHTML = `
+                <div class="typing-indicator">
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                </div>
+            `;
+            return indicatorDiv;
+        }
+
+        // Logika Pintar untuk Simulasi Jawaban AI
+        function generateAIResponse(query) {
+            const lowerQuery = query.toLowerCase();
+            
+            if (lowerQuery.includes('halo') || lowerQuery.includes('hai')) {
+                return 'Halo juga! Senang bertemu denganmu. Apa yang ingin kamu pelajari hari ini?';
+            }
+            if (lowerQuery.includes('kecerdasan buatan') || lowerQuery.includes('ai')) {
+                return 'Kecerdasan Buatan (AI) adalah teknologi simulasi kecerdasan manusia pada mesin. Contoh penerapannya mencakup Machine Learning, pemrosesan bahasa alami (NLP), dan computer vision!';
+            }
+            if (lowerQuery.includes('tugas') || lowerQuery.includes('belajar')) {
+                return 'Tentu, beri tahu saya soal atau topik tugasmu. Mari kita bedah jalurnya bersama-sama!';
+            }
+            if (lowerQuery.includes('terima kasih') || lowerQuery.includes('thanks')) {
+                return 'Sama-sama! Semangat terus ya proses belajarnya. Jangan ragu bertanya lagi!';
+            }
+            
+            // Default jawaban jika keyword tidak dikenal
+            return `Pertanyaan yang sangat bagus tentang "${query}". Dalam konteks sistem SmartStudy, kita bisa menganalisis hal tersebut menggunakan algoritma komputasi cerdas. Ingin saya jelaskan langkah dasarnya?`;
+        }
+    </script>
+</body>
+</html>
