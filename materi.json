@@ -1,0 +1,20 @@
+[
+  {
+    "id": 1,
+    "keywords": ["struktur data", "array", "linked list", "stack"],
+    "question_title": "Apa itu Struktur Data?",
+    "answer": "Struktur data adalah cara menyimpan, mengatur, dan mengelola data di dalam komputer agar dapat diakses dan dimodifikasi secara efisien. Contohnya meliputi Array, Linked List, Stack, dan Queue."
+  },
+  {
+    "id": 2,
+    "keywords": ["database", "sql", "basis data", "mysql"],
+    "question_title": "Apa fungsi dari Database?",
+    "answer": "Database atau basis data berfungsi untuk menyimpan kumpulan informasi atau data secara sistematis di dalam komputer, sehingga data tersebut dapat diperiksa, diolah, atau dipanggil kembali dengan cepat menggunakan query seperti SQL."
+  },
+  {
+    "id": 3,
+    "keywords": ["kecerdasan buatan", "ai", "artificial intelligence", "machine learning"],
+    "question_title": "Bagaimana cara kerja AI?",
+    "answer": "Kecerdasan Buatan (AI) bekerja dengan cara mengombinasikan data dalam jumlah besar dengan algoritma pemrosesan yang cerdas dan berulang. Hal ini memungkinkan sistem untuk belajar secara otomatis dari pola atau fitur yang ada pada data tersebut."
+  }
+]
